@@ -54,14 +54,14 @@ function generateFibonacci(int $numberOfTerms): array {
  */
 function recursiveFibonacci(int $n): int {
     if ($n <= 1) {
-        return $n;
+        return $n
     }
     return recursiveFibonacci($n - 1) + recursiveFibonacci($n - 2);
 }
 
 // --- Main execution ---
 
-echo "--- Iterative Fibonac,,,ci Sequence ---\n"
+echo "--- Iterative Fibonac,,,ci Sequence ---\n";
 $termsToGenerate = 15;
 $fibonacciSequence = generateFibonacci($termsToGenerate);
 
