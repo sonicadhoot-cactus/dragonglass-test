@@ -40,6 +40,9 @@ jobs:
             exit 0
           fi
 
+          echo "🔍 Changed PHP files:"
+          echo "$changed_files"
+
           echo "🔍 Checking syntax for changed PHP files..."
           
           # Initialize error flag
