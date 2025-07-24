@@ -8,12 +8,13 @@ jobs:
   php-lint:
     name: Check PHP Syntax
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.head_ref }}  # Ensure PR code is checked out
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -23,42 +24,54 @@ jobs:
           tools: none
 
       - name: Print base branch
-        run: echo "Base branch is:${{ github.base_ref }}"    
-          
-      - name: Get changed files
+        run: echo "Base branch is:${{ github.base_ref }}"
+
+      - name: Get changed PHP files
         id: changed-files
         run: |
-          # Get list of changed PHP files
+          # Fetch base branch for comparison
           git fetch origin ${{ github.base_ref }}
-          echo "files=$(git diff --name-only --diff-filter=ACMRT origin/${{ github.base_ref }} | grep '\.php$' | tr '\n' ' ')" >> $GITHUB_OUTPUT
+
+          # Get list of added/changed PHP files (with three-dot syntax)
+          git diff --name-only --diff-filter=ACMRT origin/${{ github.base_ref }}...HEAD | grep '\.php$' > php_files.txt || true
+
+          echo "Changed PHP files:"
+          cat php_files.txt
+
+          # Convert list to JSON-safe string
+          files=$(jq -Rs '.' < php_files.txt)
+          echo "files=$files" >> $GITHUB_OUTPUT
 
       - name: PHP Syntax Check
         run: |
-          # Exit gracefully if no PHP files were changed
-          changed_files="${{ steps.changed-files.outputs.files }}"
+          # Extract the output string and parse back into lines
+          changed_files=$(echo '${{ steps.changed-files.outputs.files }}' | jq -r 'split("\n")[]')
+
           if [ -z "$changed_files" ]; then
             echo "ℹ️ No PHP files were changed in this PR"
             exit 0
           fi
 
-          echo "🔍 Changed PHP files:"
-          echo "$changed_files"
-
           echo "🔍 Checking syntax for changed PHP files..."
-          
-          # Initialize error flag
+
           error_found=0
-          
-          # Check each changed file
-          for file in $changed_files; do
+
+          # Loop safely over filenames, even if they have spaces
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
             echo "Checking (pre-existence): $file"
+            if [ ! -f "$file" ]; then
+              echo "⚠️ Skipping missing file: $file"
+              continue
+            fi
+
             echo "Checking: $file"
             if ! php -l "$file"; then
               error_found=1
             fi
-          done
-          
-          # Exit with error if any syntax issues were found
+          done <<< "$changed_files"
+
           if [ $error_found -eq 1 ]; then
             echo "❌ Syntax errors were found"
             exit 1
