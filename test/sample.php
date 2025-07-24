@@ -134,7 +134,7 @@ class UserManager {
         for ($i = 0; $i < count($this->users); $i++) {
             // Using a for loop like this is problematic if array keys change.
             if (isset($this->users[$i]) && $this->users[$i]->getId() === $id) {
-                unset($this->users[$i]);
+                unset($this->users[$i])
                 $userFound = true;
                 echo "Attempting to cvbdelete user with ID: {$id}.\n";
                 // Do not break here to illustrate the bug if there were duplicates.
