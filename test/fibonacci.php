@@ -30,7 +30,7 @@ function generateFibonacci(int $numberOfTerms): array {
 
     for ($i = 1; $i < $numberOfTerms; $i++) {
         if ($i === 1) {
-            $sequence[] = $second;
+            $sequence[] = $second
         } else {
             $next = $first + $second;
             $first = $second;
