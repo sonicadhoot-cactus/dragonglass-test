@@ -1,0 +1,39 @@
+name: Trigger AI PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  trigger-ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract PR Number, Repository Name, and Custom Prompt
+        run: |
+          echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "REPO_NAME=${{ github.repository }}" >> $GITHUB_ENV
+          
+          # Fetch CUSTOM_PROMPT from GitHub repository variables
+          CUSTOM_PROMPT=$(echo "${{ vars.CUSTOM_PROMPT }}" | jq -Rsa .)
+
+          # Ensure CUSTOM_PROMPT is not empty
+          if [ -z "$CUSTOM_PROMPT" ] || [ "$CUSTOM_PROMPT" == "\"\"" ]; then
+            echo "⚠️ No CUSTOM_PROMPT found. Using an empty string."
+            CUSTOM_PROMPT=""
+          else
+            echo "✅ Using CUSTOM_PROMPT from GitHub repository variables."
+          fi
+
+          # Store CUSTOM_PROMPT as an environment variable safely
+          {
+            echo "CUSTOM_PROMPT<<EOF"
+            echo "$CUSTOM_PROMPT" | jq -r 
+            echo "EOF"
+          } >> $GITHUB_ENV
+
+      - name: Run AI PR Review
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          CUSTOM_PROMPT: ${{ env.CUSTOM_PROMPT }}
+        run: |
+          curl -sSL -H "Authorization: token $PAT_TOKEN"                -H "Accept: application/vnd.github.v3.raw"                https://raw.githubusercontent.com/cactuscommunications/PRoofAI/main/scripts/run_review.sh | bash -s "$REPO_NAME" "$PR_NUMBER" "$CUSTOM_PROMPT"

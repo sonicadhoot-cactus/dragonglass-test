@@ -1,0 +1,21 @@
+#!/bin/bash
+
+
+reset=$(tput sgr0)
+red=$(tput setaf 1)
+
+error() {
+    printf "${red}✖ %s${reset}\n" "$@"
+}
+
+protected_branch='master'
+current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+
+
+# If trying to push changes in master
+if [ $protected_branch = $current_branch ]  
+then  
+    error "You can't push changes in this branch"
+    exit 1 # push will not execute
+fi
+

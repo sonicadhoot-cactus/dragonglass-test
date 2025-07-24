@@ -1,0 +1,33 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - echo "Install phase ......"
+  build:
+    commands:
+      - echo "Pre build phase ....."
+      - echo ${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      - echo ${CODEBUILD_WEBHOOK_HEAD_REF}
+      - branch=`echo $CODEBUILD_WEBHOOK_HEAD_REF | sed -r 's/^.{11}//'`
+      - echo $branch
+      - pwd
+      - ls
+      - aws s3 cp s3://sg-editage-codebuild-artifacts/sg-cb-seleniumtestcases-dev-test/$branch/testng-results.xml .
+      # - aws s3 cp s3://sg-editage-codebuild-artifacts/sg-cb-seleniumtestcases-dev-test/DRG-94869/testng-results.xml .
+      - file_path="testng-results.xml"
+      - |
+        if [ -e "$file_path" ]; then
+          failed_value=$(grep -o 'failed="[0-9]*"' "$file_path" | sed 's/failed="\([0-9]*\)"/\1/')
+          echo "Failed value: $failed_value"
+        else
+          echo "File not found: $file_path"
+          exit 1
+        fi
+      - |
+        if [ "$failed_value" -gt 0 ]; then
+          echo "failed value is greater than zero"
+          exit 1
+        fi
+
+
+

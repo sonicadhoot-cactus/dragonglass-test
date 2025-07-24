@@ -1,0 +1,21 @@
+{
+    "recommendations": [
+        "alefragnani.Bookmarks",
+        "amiralizadeh9480.laravel-extra-intellisense",
+        "bmewburn.vscode-intelephense-client",
+        "donjayamanne.githistory",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "fayras.simple-new-file",
+        "formulahendry.auto-rename-tag",
+        "IronGeek.vscode-env",
+        "neilbrayfield.php-docblocker",
+        "PKief.material-icon-theme",
+        "streetsidesoftware.code-spell-checker",
+        "xdebug.php-debug",
+        "yatki.vscode-surround",
+    ],
+    "unwantedRecommendations": [
+        "WakaTime.vscode-wakatime",
+    ]
+}

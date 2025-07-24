@@ -1,0 +1,82 @@
+name: Run AI Tagger on PR
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  run-ai-tagger:
+    runs-on: ubuntu-latest
+
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      JENKINS_URL: ${{ secrets.JENKINS_URL }}
+      TRIGGER_TOKEN: ${{ secrets.TRIGGER_TOKEN }}
+      JENKINS_USER: ${{ secrets.JENKINS_USER }}
+      JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+
+    steps:
+      - name: Checkout current (dragonglass) repo
+        uses: actions/checkout@v3
+
+      - name: Clone CLI Tool (ai-testcase-retriever-trigger-cli)
+        run: |
+          git clone https://github.com/cactuscommunications/ai-testcase-retriever-trigger-cli.git cli-tool
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Parse PR and build prompt (fallback to Jira)
+        id: build_prompt
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            let title = pr.title || '';
+            let body = pr.body || '';
+            const branch = pr.head.ref || '';
+
+            let prompt = [title, body, branch].filter(Boolean).join('\n').trim();
+
+            if (!body.trim()) {
+              const jiraRegex = /DRG-\d+/i;
+              const match = jiraRegex.exec(title) || jiraRegex.exec(branch);
+              if (match) {
+                const jiraId = match[0];
+                const res = await fetch(`${process.env.JIRA_BASE_URL}/rest/api/2/issue/${jiraId}`, {
+                  headers: {
+                    'Authorization': `Basic ${Buffer.from(`email@example.com:${process.env.JIRA_API_TOKEN}`).toString('base64')}`,
+                    'Accept': 'application/json'
+                  }
+                });
+
+                if (res.ok) {
+                  const data = await res.json();
+                  const summary = data.fields.summary || '';
+                  const description = data.fields.description || '';
+                  prompt = [title, summary, description].join('\n').trim();
+                } else {
+                  core.warning(`Jira fetch failed for ${jiraId} with status ${res.status}`);
+                }
+              } else {
+                core.info("No Jira ID found in title or branch");
+              }
+            }
+
+            core.setOutput('prompt', prompt);
+
+      - name: Build CLI Project
+        working-directory: cli-tool
+        run: mvn clean package
+
+      - name: Run TriggerAI CLI
+        working-directory: cli-tool
+        run: |
+          java -cp target/TestCaseRetriverAI-0.0.1-SNAPSHOT.jar \
+            com.cactuscommunications.editage.aitagger.testcasesretrival.cli.TriggerAI \
+            "${{ steps.build_prompt.outputs.prompt }}"

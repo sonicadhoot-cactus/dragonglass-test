@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Get the current branch name
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+# Validate branch name format
+if [[ ! $branch_name =~ ^(main|HEAD|Revert|DRG-|DN-) ]]; then
+  echo "Error: Branch name '$branch_name' does not match the required format. Branch name should start with 'DRG-', 'DN-' or 'Revert'" >&2
+  exit 1
+fi
+
+# Get the commit message file and type
+commit_message_file="$1"
+commit_msg_type="$2"
+
+# Only modify commit messages for non-merge commits
+if [ "$commit_msg_type" != "merge" ]; then
+  # Check if the branch name is already in the commit message
+  if ! grep -q "$branch_name - " "$commit_message_file"; then
+    # Prefix the commit message with the branch name
+    sed -i.bak -e "1s/^/$branch_name - /" "$commit_message_file"
+  fi
+fi

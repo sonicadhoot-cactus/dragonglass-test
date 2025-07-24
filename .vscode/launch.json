@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Listen for Xdebug - MAC",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "pathMappings": {
+                "/var/www/dragonglass":"/private/var/www/dragonglass"
+            }
+        },
+        {
+            "name": "Listen for Xdebug - Ubuntu",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "pathMappings": {
+                "/var/www/dragonglass":"/var/www/dragonglass"
+            }
+        }
+    ]
+}

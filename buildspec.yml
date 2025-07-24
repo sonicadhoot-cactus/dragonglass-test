@@ -1,0 +1,62 @@
+version: 0.2
+#env:
+    #variables:
+        #TEST_ENV: "test28"
+        #ENV: "test"
+        #BUCKET: "s3://nv-crmdeploy-test/"
+phases:
+    install:
+        runtime-versions:
+           php: 8.2 
+        commands:
+            - echo Entered in install phase...
+            - sudo apt-add-repository ppa:ondrej/php
+            - apt-get update -y
+            - apt-get install -y php8.2-gd 
+            - apt-get install -y php8.2-dev
+            - php -m
+            - php --ini
+            
+        finally:
+            - echo Installation faield
+    build:
+        commands:
+            - pwd
+            - php -v
+            - node -v
+            - cd api
+            - composer dump-autoload
+            - cd ../crm
+            - composer install --ignore-platform-req=ext-sodium
+            - composer dump-autoload
+            - yarn install
+            - yarn run prod 
+            #- ./env_selector.sh  $ENV $BUCKET $TEST_ENV
+            # - |
+            #     if [ "$ENV" = "prod" ]; then
+            #         aws s3 sync public/dist  s3://prod-crm-css-js/crm/prod/dist --exact-timestamps --acl public-read;
+            #         aws s3 sync public/dist  s3://quick-revert-crm/prod/$CODEBUILD_RESOLVED_SOURCE_VERSION/dist 
+            #     fi
+            - |
+                if [ "$ENV" = "beta-crm" ]; then
+                    aws s3 sync public/dist  s3://prod-crm-css-js/crm/beta-crm/dist --exact-timestamps --acl public-read;
+                    aws s3 sync public/dist  s3://quick-revert-crm/beta-crm/$CODEBUILD_RESOLVED_SOURCE_VERSION/dist 
+                fi                
+                
+            - |
+                if [ "$ENV" = "test" ]; then
+                    aws s3 sync public/dist  s3://prod-crm-css-js/crm/$TEST_ENV/dist --exact-timestamps --acl public-read;
+                    aws s3 sync public/dist s3://quick-revert-crm/$TEST_ENV/$CODEBUILD_RESOLVED_SOURCE_VERSION/dist
+                fi
+            - |
+                if [ "$ENV" = "stage" ]; then
+                    aws s3 sync public/dist  s3://prod-crm-css-js/crm/staging/dist --exact-timestamps --acl public-read;
+                    aws s3 sync public/dist s3://quick-revert-crm/staging/$CODEBUILD_RESOLVED_SOURCE_VERSION/dist
+                fi
+                if [ "$ENV" = "beta-crm-test" ]; then
+                    aws s3 sync public/dist  s3://prod-crm-css-js/crm/$TEST_ENV/dist --exact-timestamps --acl public-read;
+                    aws s3 sync public/dist s3://quick-revert-crm/$TEST_ENV/$CODEBUILD_RESOLVED_SOURCE_VERSION/dist
+                fi                
+                
+        finally:
+            -  echo Build completed on `date`

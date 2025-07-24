@@ -1,0 +1,17 @@
+version: 0.2
+
+env:
+  parameter-store:
+    crm_env: CRM_ENV
+phases:
+  install:
+    runtime-versions:
+      nodejs: 12
+    commands:
+      - echo Installing node
+      - node -v
+  build:
+    commands:
+        - cd crm/
+        - yarn
+        - yarn run lint

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+invalid_syntax=('left join' 'right join')
+error=0
+
+changed_php_files=$(git diff --staged --name-only | grep -E "\.php$")
+
+for file in "${changed_php_files}" 
+do
+
+    for invalid_syn in "${invalid_syntax[@]}"
+    do
+        
+        checks=$(git diff --staged $file | grep '^\+' | grep -i -c "$invalid_syn")
+
+        if [[ $checks -gt 0 ]]
+        then
+            echo "ERROR: Found prohibited SQL condition (Left join, Right join, OR condition) in the ${file}. Also, If you have used \"or\" in IF condition as a logical operator, replace it with \"||\"."
+            error=1
+        fi
+        # git diff crm/app/Repositories/Eloquent/ProspectClientProfileRepository.php | grep '^\+' | grep -i -c "left join"
+        
+    done
+
+done
+
+if [[ -n "$changed_php_files" ]]; then
+    echo -e "\nRunning Pint on changed lines..."
+    ././pint-changed.sh
+    pint_error=$?
+fi
+
+exit $error

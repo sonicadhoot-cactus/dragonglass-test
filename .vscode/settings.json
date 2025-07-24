@@ -1,0 +1,11 @@
+{
+    "files.autoSave": "onWindowChange",
+    "editor.wordWrap": "on",
+    "editor.autoClosingBrackets": "languageDefined",
+    "editor.autoSurround": "languageDefined",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "modifications",
+    "cSpell.words": [
+        "cactuscommunications"
+    ]
+}

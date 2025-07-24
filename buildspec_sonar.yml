@@ -1,0 +1,41 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - echo "Install phase ..."
+    runtime-versions:
+      nodejs: latest
+  pre_build:
+    commands:
+      - echo "Pre build phase ..."
+      - pwd
+      - cd $CODEBUILD_SRC_DIR
+      - pwd
+      - npm install typescript
+      - apt-get update
+      - apt-get install -y jq
+      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+      - echo "Current path is >>>"
+      - sh $pwd
+      - unzip ./sonar-scanner-cli-5.0.1.3006-linux.zip
+      - ls $pwd
+      - export PATH=$PATH:./sonar-scanner-5.0.1.3006-linux/bin/
+  build:
+    commands:
+      - echo "Build phase ...."
+      - name="cactuscommunications:dragonglass"
+      # - branch=`echo $CODEBUILD_SOURCE_VERSION`
+      - branch=`echo $CODEBUILD_WEBHOOK_HEAD_REF | sed -r 's/^.{11}//'`
+      - echo $CODEBUILD_RESOLVED_SOURCE_VERSION
+      - echo $CODEBUILD_SOURCE_REPO_URL
+      - echo $CODEBUILD_SOURCE_VERSION
+      - echo $name
+      - echo $branch
+      - sonar-scanner -Dsonar.login=$LOGIN -Dsonar.host.url=$HOST -Dsonar.projectKey=$name:$branch -Dsonar.sources=. 
+      - sleep 5
+      - curl $HOST/api/qualitygates/project_status?projectKey=$name:$branch > result.json
+      - cat result.json
+      - if [ $(jq -r '.projectStatus.status' result.json) = ERROR ] ; then $CODEBUILD_BUILD_SUCCEEDING -eq 1 ;fi
+  post_build:
+    commands:
+      - echo "Post build phase ..."
