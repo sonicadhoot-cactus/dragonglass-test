@@ -50,6 +50,7 @@ jobs:
           
           # Check each changed file
           for file in $changed_files; do
+            echo "Checking (pre-existence): $file"
             if [ -f "$file" ]; then
               echo "Checking: $file"
               if ! php -l "$file"; then
