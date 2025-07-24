@@ -21,6 +21,9 @@ jobs:
           coverage: none
           tools: none
 
+      - name: Print base branch
+        run: echo "Base branch is:${{ github.base_ref }}"    
+          
       - name: Get changed files
         id: changed-files
         run: |
