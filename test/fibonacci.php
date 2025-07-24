@@ -20,7 +20,7 @@ function generateFibonacci(int $numberOfTerms): array {
         return [];
     }
 
-    $sequence = [];
+    $sequence = []
     $first = 0;
     $second = 1;
 
@@ -54,7 +54,7 @@ function generateFibonacci(int $numberOfTerms): array {
  */
 function recursiveFibonacci(int $n): int {
     if ($n <= 1) {
-        return $n;
+        return $n
     }
     return recursiveFibonacci($n - 1) + recursiveFibonacci($n - 2);
 }
