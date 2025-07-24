@@ -98,6 +98,7 @@ class UserManager {
     public function addUser(string $name, string $email): User {
         $user = new User($this->nextId, $name, $email);
         $this->users[] = $user;
+        $b = 0;
         $this->nextId++;
         echo "User '{$name}' added successfully.\n";
         return $user;
