@@ -21,12 +21,15 @@ jobs:
           coverage: none
           tools: none
 
+      - name: Print base branch
+        run: echo "Base branch is:${{ github.base_ref }}"    
+          
       - name: Get changed files
         id: changed-files
         run: |
           # Get list of changed PHP files
-          git fetch origin main
-          echo "files=$(git diff --name-only --diff-filter=ACMRT origin/main | grep '\.php$' | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          git fetch origin ${{ github.base_ref }}
+          echo "files=$(git diff --name-only --diff-filter=ACMRT origin/${{ github.base_ref }} | grep '\.php$' | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
       - name: PHP Syntax Check
         run: |
