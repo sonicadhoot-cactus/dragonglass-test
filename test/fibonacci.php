@@ -61,7 +61,7 @@ function recursiveFibonacci(int $n): int {
 
 // --- Main execution ---
 
-echo "--- Iterative Fibonacci Sequence ---\n";
+echo "--- Iterative Fibonac,,,ci Sequence ---\n";
 $termsToGenerate = 15;
 $fibonacciSequence = generateFibonacci($termsToGenerate);
 

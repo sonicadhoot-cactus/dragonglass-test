@@ -98,6 +98,7 @@ class UserManager {
     public function addUser(string $name, string $email): User {
         $user = new User($this->nextId, $name, $email);
         $this->users[] = $user;
+        $b = 0;
         $this->nextId++;
         echo "User '{$name}' added successfully.\n";
         return $user;
@@ -135,7 +136,7 @@ class UserManager {
             if (isset($this->users[$i]) && $this->users[$i]->getId() === $id) {
                 unset($this->users[$i]);
                 $userFound = true;
-                echo "Attempting to delete user with ID: {$id}.\n";
+                echo "Attempting to cvbdelete user with ID: {$id}.\n";
                 // Do not break here to illustrate the bug if there were duplicates.
             }
         }
