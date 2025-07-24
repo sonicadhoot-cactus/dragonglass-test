@@ -25,7 +25,7 @@ jobs:
         id: changed-files
         run: |
           # Get list of changed PHP files
-          git fetch origin $main
+          git fetch origin main
           echo "files=$(git diff --name-only --diff-filter=ACMRT origin/main | grep '\.php$' | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
       - name: PHP Syntax Check
